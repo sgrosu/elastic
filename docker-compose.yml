@@ -1,0 +1,120 @@
+version: '3.4'
+services:
+  odfe-node1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    #image: amazon/opendistro-for-elasticsearch:1.2.0
+    container_name: odfe-node1
+    hostname: odfe-node1.test.local
+    environment:
+            #- cluster.name=odfe-cluster
+            #- node.name=odfe-node1
+            #- discovery.seed_hosts=odfe-node1,odfe-node2
+        #- cluster.initial_master_nodes=odfe-node1,odfe-node2
+        #- bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms1512m -Xmx1512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+        #- http.cors.enabled=true
+        #- http.cors.allow-origin=*
+        #- http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+        #- http.cors.allow-credentials=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 262144
+    volumes:
+      - ./odfe-data1:/usr/share/elasticsearch/data
+      - ./elastic1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./repo:/mnt/backups
+      - ./certs:/usr/share/elasticsearch/config/certs
+        #- ./certs/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem
+        #- ./certs/admin.pem:/usr/share/elasticsearch/config/admin.pem
+        #- ./certs/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+    ports:
+      - 9200:9200
+      - 9610:9600 # required for Performance Analyzer
+    networks:
+      - odfe-net
+    restart: always
+    
+  odfe-node2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.2
+    #image: amazon/opendistro-for-elasticsearch:1.2.0
+    container_name: odfe-node2
+    hostname: odfe-node2.test.local
+    environment:
+            #- cluster.name=odfe-cluster
+            #- node.name=odfe-node2
+            #- discovery.seed_hosts=odfe-node1,odfe-node2
+        #- cluster.initial_master_nodes=odfe-node1,odfe-node2
+        #- bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144
+        hard: 262144
+    ports:
+      - 9201:9200
+    volumes:
+      - ./odfe-data2:/usr/share/elasticsearch/data
+      - ./elastic2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./certs:/usr/share/elasticsearch/config/certs
+      - ./repo:/mnt/backups
+        #- ./certs/root-ca.pem:/usr/share/elasticsearch/config/root-ca.pem
+        #- ./certs/admin.pem:/usr/share/elasticsearch/config/admin.pem
+        #- ./certs/admin-key.pem:/usr/share/elasticsearch/config/admin-key.pem
+    networks:
+      - odfe-net
+    restart: always
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.9.2
+    #image: amazon/opendistro-for-elasticsearch-kibana:1.2.0
+    container_name: odfe-kibana
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      ELASTICSEARCH_URL: https://odfe-node1:9200
+      ELASTICSEARCH_HOSTS: https://odfe-node1:9200
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./certs/ca.crt:/usr/share/kibana/ca.crt  
+    networks:
+      - odfe-net
+    restart: always
+
+  logstash:
+          #image: docker.elastic.co/logstash/logstash-oss:7.9.2
+    image: docker.elastic.co/logstash/logstash:7.9.2 
+    volumes:
+      - type: bind
+        source: ./logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./logstash/pipeline
+        target: /usr/share/logstash/pipeline
+        read_only: true
+      - type: bind
+        source: ./certs
+        target: /usr/share/logstash/certs
+    ports:
+      - "5100:5000/tcp"
+      - "5100:5000/udp"
+      - "9630:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+        - odfe-net
+    depends_on:
+      - odfe-node1
+
+networks:
+  odfe-net:
+          

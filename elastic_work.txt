@@ -1,0 +1,243 @@
+PUT /_snapshot/backup/snapshot_1?wait_for_completion=true
+
+
+
+
+get /_cat/indices?v
+
+get /_cat/nodes?v
+
+put /index-test/doc/1
+{
+  "user": "miles",
+  "message": "Hello"
+}
+
+get /bank/_doc?v
+
+put /index-test1/_doc/2
+{
+  "user": "milos",
+  "age": "20",
+  "message": "hey, dick!"
+}
+
+get _component_template/ct1
+
+PUT _index_template/it1
+{
+  "index_patterns": ["index-*"], 
+  "template": {
+    "mappings": {
+      "properties": {
+        "user": {
+          "type": "text"
+        },
+        "message": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+
+
+put /index-test1/_doc/1
+{
+  "user": "baba",
+  "age": "62",
+  "message": "hey, duck!"
+}
+
+get /bank
+
+get /bank/_search?pretty=true&q=*:*
+
+get /bank/_doc/1
+
+post /bank/_doc/1/_update
+{
+  "doc":{
+    "age": "33"
+  }
+}
+
+
+
+post /index-test1/_doc/1/_update 
+{
+  "doc": {
+    "age": "63"
+  }
+}
+
+get /_cat/allocation?help
+
+get /_cat/allocation?v&h=du,dt
+
+get _cat/nodes?h=i,po,http,du,cpu,n
+
+
+get /_cat/indices?v
+
+get /metricbeat-7.9.1-2020.10.02
+
+get /bank/_search?q=state:PA
+
+get /bank/_search
+{
+  "query": {
+    "match":{
+      "address": "street"
+    }
+  }
+}
+
+
+get /bank/_search
+{
+  "query":
+  {
+    "term": {
+      "gender.keyword": {
+        "value": "M"
+      }
+    }
+  }
+}
+
+
+get /bank/_search
+{
+  "query": {
+    "bool": {
+      "must":{
+        "range":
+        {
+          "balance":
+          {
+            "lte": 10000
+          }
+        }
+      },
+    "filter": {
+      "term":{
+        "state.keyword": "KY"
+        }
+    }
+  }
+}
+}
+
+
+get /bank/_search?size=0
+{
+  "aggs": 
+  {
+    "accounts_per_state": 
+    {
+      "terms": {
+        "field": "state.keyword",
+        "size": 51
+      }
+    }
+  }
+}
+
+
+get /bank/_search?size=0
+{
+  "aggs":
+  {
+    "avg_balance":
+    {
+      "avg": {
+        "field": "balance"
+      }
+    }
+  }
+}
+
+
+get /bank/_search?size=0
+{
+  "aggs":
+  {
+    "per_state":
+    {
+      "terms": {
+        "field": "state.keyword",
+        "size": 10,
+        "order": {
+          "avg_balance": "desc"
+        }
+      },
+      "aggs":
+      {
+        "avg_balance":
+        {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+      
+    }
+  }
+}
+
+get /bank/_search?size=0
+{
+  "aggs":
+  {
+    "age_ranges":
+    {
+      "range": {
+        "field": "age",
+        "ranges": [
+          {
+            "from": 18,
+            "to": 30
+          },
+                    {
+            "from": 30,
+            "to": 40
+          },
+                    {
+            "from": 40,
+            "to": 50
+          }
+        ]
+      },
+      "aggs": {
+        "avg_balance": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+get /bank/_search?size=0
+{
+  "aggs":
+  {
+    "number_of_employers":
+    {
+      "cardinality": {
+        "field": "employer.keyword"
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+

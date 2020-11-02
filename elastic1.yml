@@ -1,0 +1,34 @@
+cluster.name: "odfe-cluster"
+#network.host: 0.0.0.0
+
+# # minimum_master_nodes need to be explicitly set when bound on a public IP
+# # set to 1 to allow single node clusters
+# # Details: https://github.com/elastic/elasticsearch/pull/17288
+# discovery.zen.minimum_master_nodes: 1
+
+# # Breaking change in 7.0
+# # https://www.elastic.co/guide/en/elasticsearch/reference/7.0/breaking-changes-7.0.html#breaking_70_discovery_changes
+# cluster.initial_master_nodes: 
+#    - elasticsearch1
+#    - docker-test-node-1 
+######## Start OpenDistro for Elasticsearch Security Demo Configuration ########
+# WARNING: revise all the lines below before you go into production
+network.publish_host: odfe-node1
+cluster.routing.allocation.disk.threshold_enabled: false
+node.max_local_storage_nodes: 3
+######## End OpenDistro for Elasticsearch Security Demo Configuration ########
+path.repo: ["/mnt/backups"]
+
+node.name: odfe-node1
+network.host: odfe-node1
+xpack.security.enabled: true
+xpack.security.http.ssl.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.http.ssl.key: certs/odfe-node1.key
+xpack.security.http.ssl.certificate: certs/odfe-node1.crt
+xpack.security.http.ssl.certificate_authorities: certs/ca.crt
+xpack.security.transport.ssl.key: certs/odfe-node1.key
+xpack.security.transport.ssl.certificate: certs/odfe-node1.crt
+xpack.security.transport.ssl.certificate_authorities: certs/ca.crt
+discovery.seed_hosts: [ "odfe-node1" ]
+cluster.initial_master_nodes: [ "odfe-node1" ]
