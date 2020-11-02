@@ -94,6 +94,10 @@ services:
     image: docker.elastic.co/logstash/logstash:7.9.2 
     volumes:
       - type: bind
+        source: ./logstash/config/pipelines.yml
+        target: /usr/share/logstash/config/pipelines.yml
+        read_only: true
+      - type: bind
         source: ./logstash/config/logstash.yml
         target: /usr/share/logstash/config/logstash.yml
         read_only: true
@@ -104,6 +108,9 @@ services:
       - type: bind
         source: ./certs
         target: /usr/share/logstash/certs
+      - type: bind
+        source: ./plugins
+        target: /usr/share/plugins
     ports:
       - "5100:5000/tcp"
       - "5100:5000/udp"

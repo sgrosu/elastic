@@ -1,0 +1,6 @@
+- pipeline.id: docker
+  path.config: "/usr/share/logstash/pipeline/logstash.conf"
+  pipeline.workers: 3
+- pipeline.id: sql
+  path.config: "/usr/share/logstash/pipeline/mysql.conf"
+  queue.type: persisted
